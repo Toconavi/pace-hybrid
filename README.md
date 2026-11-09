@@ -1,32 +1,24 @@
 # PACE / HYBRID
 
-Responsive, local-first training planner in German. Static HTML/CSS/JavaScript, no build dependencies.
+German local-first HYROX training PWA. Static HTML, CSS and JavaScript; serve `dist/` over HTTPS. No build dependencies.
 
-## Run
-Serve `dist/` with any static web server. HTTPS is required for the service worker outside localhost.
+## Version 0.4
+- Dashboard prioritizes the next incomplete task, a recent measured fitness picture and weekly completion. The race goal is a small editable note.
+- FIT/ZIP import decodes sessions, timestamped records, laps and timer events; analysis uses full-resolution data before chart thinning.
+- Feedback covers pace, heart rate, round variation, Garmin aerobic Training Effect, cadence/power where present, and cautious comparisons with similar solo runs.
+- Heart-rate change is compared after the initial 10 minutes only when speed and elevation permit; weather and measurement limitations remain explicit. No diagnostic or VO2max claim.
+- Same-day runs/HIIT sessions match compatible planned tasks, preserve notes and link IDs. Short sessions remain partial; explicit confirmation can complete them. Reimports enrich old summaries without duplicate credit.
+- Per-activity context can exclude accompanied/easy runs from performance comparisons. Known five-station sequences can be reconstructed from user-entered timing; they are not automatically recognized.
+- Import and task completion produce a celebration; reduced-motion preference is respected.
+- Imported high aerobic TE (>=4.5, >=40 min) can make the next two days easier while recovery feedback is missing. Positive recovery overrides this precaution. This is a transparent app rule, not a validated readiness model.
 
-## Features
-- First-use profile setup; optional Basel HYROX preset
-- Editable goal date, category, desired finish time, training days and running budget
-- Weekly rule-based running suggestions, optional controlled intervals, reduced weeks and pre-event taper
-- Training notes, perceived exertion, editable session contents, small home tasks
-- Local Garmin FIT / ZIP / German activities CSV import with duplicate detection
-- JSON backup and restore
-- Web manifest and offline service worker
+## Privacy and persistence
+Profile, logs, analysis samples and summaries remain in browser localStorage. Original uploads are archived separately in local IndexedDB when available. Keep the downloaded originals; JSON backup contains application data but does not include original file blobs. No cloud synchronization and no AI service receives activity data. Public repository contains synthetic test data only, never user Garmin files.
 
-## Limits
-No Garmin account connection, no cloud data sync and no AI model backend. Imported files are parsed locally; only activity summaries are retained. No diagnostic interpretation or automatic personal heart-rate zones. Plan rules use the profile, calendar and reported recovery; imported Garmin metrics do not yet drive the plan. Goal times are wishes, not predicted finishes. Fixed training content needs manual entry. Review suggestions against actual coach-led sessions and recovery.
+Pre-0.4 imports retained only summaries; reimport the same FIT/ZIP once for detailed analysis. Existing logs/settings are retained. A full localStorage raises a visible save error; imports roll back instead of reporting false success.
 
-Personal data is stored under `pace-hybrid-v1` in localStorage. Browser data loss removes it unless a JSON backup is available. This repository contains no uploaded Garmin files. The optional Basel preset contains no personal name or birth date.
+## Boundaries
+No overall HYROX fitness percentage is estimated. The displayed percentage means weekly plan completion only. Wrist measurements do not establish station loads, repetitions, technique, individual HRmax or assured finish time. Supported analyses cover common FIT fields, not every vendor extension. Original uploads are retained locally for future processing. Interval/station verification is limited to recorded/user-described data.
 
-## Checks
-JavaScript syntax validated; FIT/ZIP parser checked against the supplied running and HIIT recordings. Browser checked: onboarding, dashboard, training logging, exertion-based reduction and profile saving. Mobile layout implemented with CSS breakpoints; device installation/offline use not yet verified.
-
-## Version 0.2
-- Basel preset: 45-minute Monday endurance run and 40-minute Friday session (10 min warm-up, 4 x 3 min controlled work, 3 x 2 min recovery, 12 min cool-down).
-- Progressive interval variants, reduced weeks and taper; all sessions respect the running budget.
-- Recovery feedback distinguishes hard but well-tolerated sessions from ongoing fatigue.
-- Existing original Basel profiles upgrade automatically; custom profiles, imported activities and training logs remain intact.
-- Completed session snapshots stay unchanged; older logs without snapshots are labelled rather than assigned a new prescription.
-- Service worker update refreshes controlled pages once.
-- Verified migration, week-by-week time budgets, recovery behaviour, custom profiles and logged snapshots; browser checked updated plan and recovery form.
+## Validation
+Run `node tests/coach.test.cjs`. Tests cover synthetic FIT records, missing values, detail metrics, import-to-task completion, duplicates, unlinking, partial completion, explicit confirmation, load rules and recovery overrides. Four real user-provided recordings were checked privately against expected session values; those fixtures are excluded. Browser checked real ZIP import, analysis/graphs, task linking, next task and celebration. Physical-device installation and offline data recovery were not re-tested.
