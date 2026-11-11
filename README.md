@@ -22,3 +22,17 @@ No overall HYROX fitness percentage is estimated. The displayed percentage means
 
 ## Validation
 Run `node tests/coach.test.cjs`. Tests cover synthetic FIT records, missing values, detail metrics, import-to-task completion, duplicates, unlinking, partial completion, explicit confirmation, load rules and recovery overrides. Four real user-provided recordings were checked privately against expected session values; those fixtures are excluded. Browser checked real ZIP import, analysis/graphs, task linking, next task and celebration. Physical-device installation and offline data recovery were not re-tested.
+
+## Version 0.5 — authenticated device sync
+
+The same existing private Site now uses a Worker to serve the unchanged browser app and a same-origin `/api/sync` endpoint. `.openai/hosting.json` declares the logical `BUCKET` R2 binding; Sites provisions it. No external credentials are embedded. Build with `node scripts/build.mjs`; the Worker embeds all `web/` assets. Run `npm test` and `node scripts/validate-artifact.mjs` after building.
+
+Profile, activities, normalized analysis samples and training logs are stored as a private per-account JSON object in R2. Ownership is derived exclusively from the platform-provided `oai-authenticated-user-id`, never a client-supplied user ID or email. Requests without an identity are rejected, including service-only requests without a user identity. R2 object keys are SHA-256-derived from that Site-scoped user ID; the bucket is never exposed directly. TLS and platform storage protection apply; this is not end-to-end encryption.
+
+Writes require same-origin JSON requests with the app-specific header. Conditional R2 writes enforce compare-and-swap using the last read ETag. The client performs a three-way merge against the last successful checkpoint, preserving unrelated additions and propagating deletions. Concurrent conflicting fields are retained locally for explicit local/online selection; no online overwrite occurs until resolved. The checkpoint and pending conflicts live in IndexedDB, separate from the existing local data cache. A changed account halts upload of the previous account's local cache.
+
+Existing local data is uploaded after authenticated connection. A new empty device receives the online profile. Devices with independently configured profiles may require a one-time conflict choice. Sync runs after saves, on reconnect, when returning to the app and periodically while visible. Offline edits remain local until a successful sync; the status banner reports pending, failed, account mismatch and conflict states. Personal API responses are `no-store` and excluded from the service worker cache.
+
+Original FIT/ZIP blobs stay device-local. The imported activity and its normalized analysis are synchronized, so the phone needs no file transfer. Independent JSON backups remain available. Neither build output nor user training data is committed to the public source repository.
+
+Validation: server tests cover anonymous rejection, CSRF rejection, separate account isolation, conditional-write races, legacy/fresh-device merges, offline deletions, same-record conflicts and prototype-key rejection. Previous training-analysis tests still pass. Physical two-device authenticated operation must be confirmed by the user after opening the updated app on both devices.

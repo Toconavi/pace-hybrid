@@ -1,4 +1,11 @@
-.DS_Store
+dist/
+generated/
+.sites-runtime/
+.sites-checkout/
+.wrangler/
+node_modules/
+.env*
+.dev.vars*
 *.fit
 *.zip
 *-sicherung.json

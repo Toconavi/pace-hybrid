@@ -1,0 +1,8 @@
+{
+  "name": "pace-hybrid",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/sync.test.mjs tests/sync-client.test.mjs && node tests/coach.test.cjs"
+  }
+}
